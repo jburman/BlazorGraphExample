@@ -1,0 +1,9 @@
+{
+  "name": "myproject",
+  "version": "1.0.0",
+  "devDependencies": {
+    "bulma": "^0.7.1",
+    "msal": "^0.1.7",
+    "open-iconic": "^1.1.1"
+  }
+}

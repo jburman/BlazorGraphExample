@@ -1,0 +1,30 @@
+@inherits BlazorLayoutComponent
+
+@inject AppState state
+@inject IAuthService authService
+
+@if(state.LoginStatus == LoginStatus.LoggedIn) {
+    <p class="control">
+        <button class="button" onclick="@LogoutUser">Logout</button>
+    </p>
+} else {
+    <p class="control">
+        <button class="button is-info" onclick="@LoginUser">Login</button>
+    </p>
+}
+
+@functions {
+    void LoginUser() {
+        authService.Login();
+    }
+
+    void LogoutUser() {
+        authService.Logout();
+    }
+
+    protected override void OnInit() {
+        var isLoggedIn = authService.IsLoggedIn();
+        var status = isLoggedIn ? LoginStatus.LoggedIn : LoginStatus.LoggedOut;
+        state.SetLoginStatus(isLoggedIn ? LoginStatus.LoggedIn : LoginStatus.LoggedOut);
+    }
+}

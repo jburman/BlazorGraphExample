@@ -1,0 +1,21 @@
+[
+  {
+    "outputFileName": "wwwroot/css/bulma/bulma.min.css",
+    "inputFiles": [
+      "node_modules/bulma/css/bulma.min.css"
+    ]
+  },
+  //{
+  //  "outputFileName": "wwwroot/css/open-iconic/font/css/open-iconic.min.css",
+  //  "inputFiles": [
+  //    "node_modules/open-iconic/font/css/open-iconic.min.css"
+  //  ],
+  //  "minify": { "enabled": false }
+  //},
+  {
+    "outputFileName": "wwwroot/scripts/msal/msal.min.js",
+    "inputFiles": [
+      "node_modules/msal/dist/msal.min.js"
+    ]
+  }
+]

@@ -121,3 +121,30 @@ app {
         display: block;
     }
 }
+
+/* Look for Bulma replacements */
+.px-3 {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+}
+
+.pl-4 {
+    padding-left: 1.5rem !important;
+}
+
+.ml-md-auto {
+    margin-left: auto !important;
+}
+
+/* Custom */
+.navbar-brand a {
+    color: white;
+}
+
+.content ul {
+    list-style: none;
+}
+
+i.oi {
+    margin-right: 10px;
+}

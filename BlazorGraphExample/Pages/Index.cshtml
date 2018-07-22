@@ -1,7 +1,101 @@
 ﻿@page "/"
 
-<h1>Hello, world!</h1>
+@inject AppState state
+@inject IGraphService graphService
 
-Welcome to your new app.
+<section class="section">
+    <div class="container">
+        <nav class="navbar">
+            <div class="navbar-end">
+                <div class="field is-grouped">
+                    <Login></Login>
+                </div>
+            </div>
+        </nav>
+        <h1 class="title">Blazor Graph API Example</h1>
+        <article class="subtitle">
+            Welcome to an example of using the Microsoft Graph API from Blazor. View the <a href="">source</a> on Github to see how it works.
+        </article>
 
-<SurveyPrompt Title="How is Blazor working for you?" />
+        @if (state.LoginStatus == LoginStatus.LoggedIn)
+        {
+            <div class="card">
+                <header class="card-header">
+                    <p class="card-header-title">Hello, @state.User?.DisplayName</p>
+                </header>
+                <div class="card-content">
+                    <div class="columns">
+                        <div class="column is-one-third">
+                            @if (state.DriveItems != null)
+                            {
+                                <nav class="panel">
+                                        
+                                    @foreach (var folderItem in state.DriveItems.Where(di => di.IsFolder))
+                                    {
+                                        <a class="panel-block">
+                                            <i class="oi oi-folder"></i> @folderItem.Name (@folderItem.Folder.ChildCount)
+                                        </a>
+                                    }
+
+                                    @foreach (var fileItem in state.DriveItems.Where(di => di.IsFile))
+                                    {
+                                        <a class="panel-block">
+                                            <i class="oi oi-file"></i> @fileItem.Name (@fileItem.Size)
+                                        </a>
+                                    }
+                                </nav>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+        else if (state.LoginStatus == LoginStatus.LoggedOut)
+        {
+            <div class="tile">
+                <article class="tile is-6 notification is-warning is-vertical">
+                    <p class="title">You are not logged in</p>
+                    <p class="subtitle">Click on login to get logged into Graph API and try this app out.</p>
+                </article>
+            </div>
+
+        }
+        else // still loading login status
+        {
+            <div>Loading...</div>
+        }
+    </div>
+</section>
+
+@functions {
+
+    protected override void OnInit()
+    {
+        state.LoginStatusChanged += async () =>
+        {
+            await LoadUserAsync();
+
+            StateHasChanged();
+        };
+    }
+
+    protected async Task LoadUserAsync()
+    {
+        if (state.LoginStatus == LoginStatus.LoggedIn)
+        {
+            var user = await graphService.GetMeAsync();
+            state.SetUser(user);
+
+            await LoadDriveItemsAsync();
+        }
+        else
+        {
+            state.SetUser(null);
+            state.SetDriveItems(null);
+        }
+    }
+
+
+    protected async Task LoadDriveItemsAsync() =>
+        state.SetDriveItems(await graphService.GetDriveRootItemsAsync());
+}
