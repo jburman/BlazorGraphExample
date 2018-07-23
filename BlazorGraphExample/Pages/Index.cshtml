@@ -14,41 +14,14 @@
         </nav>
         <h1 class="title">Blazor Graph API Example</h1>
         <article class="subtitle">
-            Welcome to an example of using the Microsoft Graph API from Blazor. View the <a href="">source</a> on Github to see how it works.
+            Welcome to an example of using the Microsoft Graph API from Blazor. View the <a href="https://github.com/jburman/BlazorGraphExample" target="_blank">source</a> on Github to see how it works.
         </article>
 
         @if (state.LoginStatus == LoginStatus.LoggedIn)
         {
-            <div class="card">
-                <header class="card-header">
-                    <p class="card-header-title">Hello, @state.User?.DisplayName</p>
-                </header>
-                <div class="card-content">
-                    <div class="columns">
-                        <div class="column is-one-third">
-                            @if (state.DriveItems != null)
-                            {
-                                <nav class="panel">
-                                        
-                                    @foreach (var folderItem in state.DriveItems.Where(di => di.IsFolder))
-                                    {
-                                        <a class="panel-block">
-                                            <i class="oi oi-folder"></i> @folderItem.Name (@folderItem.Folder.ChildCount)
-                                        </a>
-                                    }
-
-                                    @foreach (var fileItem in state.DriveItems.Where(di => di.IsFile))
-                                    {
-                                        <a class="panel-block">
-                                            <i class="oi oi-file"></i> @fileItem.Name (@fileItem.Size)
-                                        </a>
-                                    }
-                                </nav>
-                            }
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <hr />
+            <p class="subtitle">Hello, @state.User?.DisplayName</p>
+            <DriveItemList></DriveItemList>
         }
         else if (state.LoginStatus == LoginStatus.LoggedOut)
         {
@@ -62,7 +35,7 @@
         }
         else // still loading login status
         {
-            <div>Loading...</div>
+            <Loading Text="Loading your info..."></Loading>
         }
     </div>
 </section>
@@ -85,17 +58,8 @@
         {
             var user = await graphService.GetMeAsync();
             state.SetUser(user);
-
-            await LoadDriveItemsAsync();
         }
         else
-        {
             state.SetUser(null);
-            state.SetDriveItems(null);
-        }
     }
-
-
-    protected async Task LoadDriveItemsAsync() =>
-        state.SetDriveItems(await graphService.GetDriveRootItemsAsync());
 }

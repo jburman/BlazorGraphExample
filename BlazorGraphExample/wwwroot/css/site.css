@@ -148,3 +148,16 @@ app {
 i.oi {
     margin-right: 10px;
 }
+
+.folder-files-tag {
+    margin-left: auto;
+}
+
+.folder-files-count {
+    min-width: 65px;
+}
+
+.file-size-tag {
+    margin-left: auto;
+    min-width: 105px;
+}

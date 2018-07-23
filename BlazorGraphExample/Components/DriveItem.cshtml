@@ -1,0 +1,29 @@
+@inject AppState state
+@inject IGraphService graphService
+
+@if(Item.IsFolder) {
+    <a class="panel-block">
+        <span class="is-text-info"><i class="oi oi-folder"></i> @Item.Name</span>
+        <span class="folder-files-tag tags has-addons">
+            <span class="tag">files</span>
+            <span class="folder-files-count tag is-primary">@Item.Folder.ChildCount</span>
+        </span>
+    </a>
+} else {
+    <a class="panel-block">
+        <i class="oi oi-file"></i> @Item.Name
+        <span class="file-size-tag tag is-info">
+            @FormatSize(Item.Size)
+        </span>
+    </a>
+}
+
+@functions {
+    [Parameter]
+    BlazorGraphExample.Services.GraphAPI.DriveItem Item { get; set; }
+
+    string FormatSize(long size) {
+        var byteSize = ByteSizeLib.ByteSize.FromBytes(size);
+        return byteSize.ToString("KB");
+    }
+}

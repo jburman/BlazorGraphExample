@@ -1,0 +1,56 @@
+@inject AppState state
+@inject IGraphService graphService
+
+<div class="card-content">
+    <div class="columns">
+        <div class="column is-half-desktop">
+            @if (_loading && state.DriveItems == null)
+            {
+                <Loading Text="Loading OneDrive files..."></Loading>
+            }
+            else
+            {
+                @if (state.DriveItems != null)
+                {
+                    <nav class="panel">
+
+                        @foreach (var item in state.DriveItems.OrderByDescending(item => item.IsFolder).ThenBy(item => item.Name))
+                        {
+                            <DriveItem Item="@item"></DriveItem>
+                        }
+                        <div class="panel-block">
+                            <button class="button is-link is-outlined is-fullwidth" onclick="@LoadDriveItemsAsync" disabled="@_loading">
+                                <i class="oi oi-reload"></i> Reload
+                            </button>
+                          </div>
+                    </nav>
+                }
+            }
+        </div>
+    </div>
+</div>
+
+@functions {
+    bool _loading = false;
+
+    protected async Task LoadDriveItemsAsync() {
+        if(!_loading) { 
+            try
+            {
+                _loading = true;
+                state.SetDriveItems(await graphService.GetDriveRootItemsAsync());
+            }
+            finally
+            {
+                _loading = false;
+            }
+        }
+    }
+
+    protected override async Task OnInitAsync()
+    {
+        state.DriveItemsChanged += StateHasChanged;
+
+        await LoadDriveItemsAsync();
+    }
+}
