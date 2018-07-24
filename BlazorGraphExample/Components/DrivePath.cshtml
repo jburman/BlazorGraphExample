@@ -1,0 +1,54 @@
+@inject AppState state
+
+<navbar class="navbar">
+    <div class="navbar-start">
+        <div class="navbar-item">
+            <span class="has-text-weight-bold">Selected Path:</span>
+        </div>
+        @if(string.IsNullOrEmpty(state.Path)) {
+            <div class="navbar-item">
+                <span>/</span>
+            </div>
+        } else {
+            <div class="navbar-item">
+                <span>@state.Path</span>
+            </div>
+        }
+    </div>
+    @if(!string.IsNullOrEmpty(state.Path)) {
+        <div class="navbar-end">
+            <div class="navbar-item">
+                @if(state.InProgress && _loadedCount > 0) {
+                    <span class="tag is-info">Loaded @_loadedCount</span>
+                }
+                <a class="button @(state.InProgress ? "is-loading" : "")" onclick="@PopFolder">
+                    <span class="icon">
+                        <i class="oi oi-arrow-thick-top"></i>
+                    </span>
+                    <span>Up</span>
+                </a>
+            </div>
+        </div>
+    }
+</navbar>
+
+@functions {
+    int _loadedCount = 0;
+
+    void PopFolder() {
+        state.PopFolder();
+    }
+
+    protected override void OnInit()
+    {
+        state.InProgressChanged += StateHasChanged;
+        state.LoadProgressChanged += (count) => {
+            _loadedCount = count;
+            StateHasChanged();
+        };
+        state.DriveItemsChanged += () => { 
+            _loadedCount = 0;
+            StateHasChanged();
+        };
+    }
+}

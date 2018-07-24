@@ -2,16 +2,16 @@
 @inject IGraphService graphService
 
 @if(Item.IsFolder) {
-    <a class="panel-block">
-        <span class="is-text-info"><i class="oi oi-folder"></i> @Item.Name</span>
+    <a class="panel-block" onclick="@(() => SelectFolder(Item.Name))">
+        <i class="oi oi-folder has-text-primary"></i> @Item.Name
         <span class="folder-files-tag tags has-addons">
             <span class="tag">files</span>
             <span class="folder-files-count tag is-primary">@Item.Folder.ChildCount</span>
         </span>
     </a>
 } else {
-    <a class="panel-block">
-        <i class="oi oi-file"></i> @Item.Name
+    <a class="panel-block" href="@Item.WebUrl" target="_blank">
+        <i class="oi oi-file has-text-info"></i> @Item.Name
         <span class="file-size-tag tag is-info">
             @FormatSize(Item.Size)
         </span>
@@ -24,6 +24,15 @@
 
     string FormatSize(long size) {
         var byteSize = ByteSizeLib.ByteSize.FromBytes(size);
-        return byteSize.ToString("KB");
+        if(size > 1_000_000) 
+            return byteSize.ToString("MB");
+        else 
+            return byteSize.ToString("KB");
+    }
+
+    void SelectFolder(string folder) {
+        if(!state.InProgress) {
+            state.PushFolder(folder);
+        }
     }
 }

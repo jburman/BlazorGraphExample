@@ -7,6 +7,10 @@
     <LangVersion>7.3</LangVersion>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DefineConstants>TRACE;DEBUG;NETSTANDARD;NETSTANDARD2_0;SIMPLE_JSON_DATACONTRACT</DefineConstants>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="ByteSize" Version="1.3.0" />
     <PackageReference Include="Microsoft.AspNetCore.Blazor.Browser" Version="0.4.0" />
@@ -16,6 +20,9 @@
 
   <ItemGroup>
     <Content Update="Components\DriveItem.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Components\DrivePath.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
     <Content Update="Components\Loading.cshtml">

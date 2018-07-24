@@ -3,8 +3,8 @@
 
 <div class="card-content">
     <div class="columns">
-        <div class="column is-half-desktop">
-            @if (_loading && state.DriveItems == null)
+        <div class="column is-three-quarters-desktop">
+            @if (state.InProgress && state.DriveItems == null)
             {
                 <Loading Text="Loading OneDrive files..."></Loading>
             }
@@ -12,6 +12,7 @@
             {
                 @if (state.DriveItems != null)
                 {
+                    <DrivePath></DrivePath>
                     <nav class="panel">
 
                         @foreach (var item in state.DriveItems.OrderByDescending(item => item.IsFolder).ThenBy(item => item.Name))
@@ -19,7 +20,7 @@
                             <DriveItem Item="@item"></DriveItem>
                         }
                         <div class="panel-block">
-                            <button class="button is-link is-outlined is-fullwidth" onclick="@LoadDriveItemsAsync" disabled="@_loading">
+                            <button class="button is-link is-outlined is-fullwidth @(state.InProgress ? "is-loading" : "")" onclick="@LoadDriveItemsAsync">
                                 <i class="oi oi-reload"></i> Reload
                             </button>
                           </div>
@@ -31,25 +32,29 @@
 </div>
 
 @functions {
-    bool _loading = false;
-
     protected async Task LoadDriveItemsAsync() {
-        if(!_loading) { 
+        if(!state.InProgress) {
+            List<BlazorGraphExample.Services.GraphAPI.DriveItem> items = null;
             try
             {
-                _loading = true;
-                state.SetDriveItems(await graphService.GetDriveRootItemsAsync());
+                state.SetInProgress(true);
+                items = await graphService.GetDriveItemsAtPathAsync(state.Path, state.FireLoadProgressChanged);
             }
             finally
             {
-                _loading = false;
+                state.SetInProgress(false);
             }
+            state.SetDriveItems(items);
         }
     }
 
     protected override async Task OnInitAsync()
     {
+        state.InProgressChanged += StateHasChanged;
         state.DriveItemsChanged += StateHasChanged;
+        state.PathChanged += async () => {
+            await LoadDriveItemsAsync();
+        };
 
         await LoadDriveItemsAsync();
     }

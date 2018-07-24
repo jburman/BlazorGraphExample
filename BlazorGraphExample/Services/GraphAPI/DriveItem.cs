@@ -13,6 +13,7 @@ namespace BlazorGraphExample.Services.GraphAPI
         public string WebUrl { get; set; }
         public FileFacet File { get; set; }
         public FolderFacet Folder { get; set; }
+        public ItemReference ParentReference { get; set; }
 
         public bool IsFile => File != null;
         public bool IsFolder => Folder != null;
