@@ -11,6 +11,6 @@ namespace BlazorGraphExample.Services
         Task<Drive[]> GetDrivesAsync();
         Task<Drive> GetDriveAsync(string driveId);
         Task<DriveItem[]> GetDriveRootItemsAsync(string driveId = null);
-        Task<List<DriveItem>> GetDriveItemsAtPathAsync(string path = "", Action<int> progressCallback = null);
+        Task<List<DriveItem>> GetDriveItemsAtPathAsync(string path = "", Action<int> progressCallback = null, bool bypassCache = false);
     }
 }

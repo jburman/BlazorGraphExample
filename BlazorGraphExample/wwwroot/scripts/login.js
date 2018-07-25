@@ -22,8 +22,7 @@ function initMSAL(applicationConfig) {
             authCallback,
             {
                 logger: logger,
-                cacheLocation: 'localStorage',
-                redirectUri: applicationConfig.redirectUri
+                cacheLocation: 'localStorage'
             });
     }
 }

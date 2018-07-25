@@ -33,12 +33,13 @@
 
 @functions {
     protected async Task LoadDriveItemsAsync() {
+
         if(!state.InProgress) {
             List<BlazorGraphExample.Services.GraphAPI.DriveItem> items = null;
             try
             {
                 state.SetInProgress(true);
-                items = await graphService.GetDriveItemsAtPathAsync(state.Path, state.FireLoadProgressChanged);
+                items = await graphService.GetDriveItemsAtPathAsync(state.Path, state.FireLoadProgressChanged, true);
             }
             finally
             {
