@@ -1,12 +1,11 @@
-﻿using BlazorGraphExample.Shared;
-using Microsoft.AspNetCore.Blazor.Browser.Interop;
+﻿using Microsoft.AspNetCore.Blazor.Browser.Interop;
 using System.Threading.Tasks;
 
 namespace BlazorGraphExample.Services
 {
     public class AuthService : IAuthService
     {
-        private AuthConfig _config;
+        private readonly AuthConfig _config;
 
         public AuthService(AuthConfig config)
         {

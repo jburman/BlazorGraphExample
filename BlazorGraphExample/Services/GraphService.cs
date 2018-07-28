@@ -16,8 +16,8 @@ namespace BlazorGraphExample.Services
         const string GraphEndpoint_DriveRoot = "https://graph.microsoft.com/v1.0/me/drive/root";
         const string GraphEndpoint_DriveRootChildren = GraphEndpoint_DriveRoot + "/children";
         
-        private IAuthService _authService;
-        private HttpClient _http;
+        private readonly IAuthService _authService;
+        private readonly HttpClient _http;
 
         // cache token for a few minutes
         private string _idToken;
@@ -183,8 +183,7 @@ namespace BlazorGraphExample.Services
 
         private void _AddToCache(string path, List<DriveItem> items)
         {
-            List<DriveItem> getItems;
-            if (!_TryGetFromCache(path, out getItems))
+            if (!_TryGetFromCache(path, out List<DriveItem> getItems))
             {
                 if (_itemsCache.Count > CacheLimit)
                 {

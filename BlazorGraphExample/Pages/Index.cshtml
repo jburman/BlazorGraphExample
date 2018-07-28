@@ -20,7 +20,12 @@
         @if (state.LoginStatus == LoginStatus.LoggedIn)
         {
             <hr />
-            <p class="subtitle">Hello, @state.User?.DisplayName</p>
+            <p class="subtitle">
+                @if (state.User != null)
+                {
+                    <text>Hello, @(string.IsNullOrEmpty(state.User.DisplayName) ? state.User.UserPrincipalName : state.User.DisplayName)</text>
+                }
+            </p>
             <DriveItemList></DriveItemList>
         }
         else if (state.LoginStatus == LoginStatus.LoggedOut)
