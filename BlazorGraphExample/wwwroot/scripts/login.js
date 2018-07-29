@@ -1,5 +1,4 @@
-﻿
-var userAgentApplication = null;
+﻿var userAgentApplication = null;
 
 var logger = new Msal.Logger(loggerCallback, { level: Msal.LogLevel.Error, correlationId: '11111', piiLoggingEnabled: false });
 
