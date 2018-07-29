@@ -55,8 +55,6 @@ function loginRedirect(applicationConfig) {
 }
 
 function getTokenAsync(applicationConfig) {
-    applicationConfig = JSON.parse(applicationConfig);
-
     initMSAL(applicationConfig);
     return new Promise(function (resolve, reject) {
 
@@ -79,11 +77,3 @@ function logout(applicationConfig) {
     userAgentApplication.logout();
     return "";
 }
-
-Blazor.registerFunction('isLoggedIn', isLoggedIn);
-Blazor.registerFunction('getUserName', getUserName);
-Blazor.registerFunction('loginRedirect', loginRedirect);
-Blazor.registerFunction('getTokenAsync', getTokenAsync);
-Blazor.registerFunction('logout', logout);
-
-

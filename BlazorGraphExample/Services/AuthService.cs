@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Blazor.Browser.Interop;
+﻿using Microsoft.JSInterop;
 using System.Threading.Tasks;
 
 namespace BlazorGraphExample.Services
@@ -12,24 +12,26 @@ namespace BlazorGraphExample.Services
             _config = config;
         }
 
+        private IJSInProcessRuntime _JS => (IJSInProcessRuntime)JSRuntime.Current;
+
         public bool IsLoggedIn() =>
-            RegisteredFunction.Invoke<bool>("isLoggedIn", _config);
+            _JS.Invoke<bool>("isLoggedIn", _config);
 
         public string GetUserName() =>
-            RegisteredFunction.Invoke<string>("getUserName", _config);
+            _JS.Invoke<string>("getUserName", _config);
 
         public void Login() =>
-            RegisteredFunction.Invoke<string>("loginRedirect", _config);
+            _JS.Invoke<string>("loginRedirect", _config);
 
         public void Logout() =>
-            RegisteredFunction.Invoke<string>("logout", _config);
+            _JS.Invoke<string>("logout", _config);
 
         public async Task<bool> TryCompleteLoginAsync() =>
-            await RegisteredFunction.InvokeAsync<bool>("completeLoginAsync", _config);
+            await _JS.InvokeAsync<bool>("completeLoginAsync", _config);
 
         public async Task<(bool success, string idToken)> TryGetTokenAsync()
         {
-            var result = await RegisteredFunction.InvokeAsync<GetTokenResult>("getTokenAsync", _config);
+            var result = await _JS.InvokeAsync<GetTokenResult>("getTokenAsync", _config);
 
             if (result != null)
                 return (true, result.IdToken);
