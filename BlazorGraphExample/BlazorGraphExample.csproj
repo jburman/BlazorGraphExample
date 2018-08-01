@@ -29,6 +29,9 @@
     <Content Update="Components\DrivePath.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
+    <Content Update="Components\Paginator.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
     <Content Update="Components\Loading.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>

@@ -19,6 +19,9 @@
                         {
                             <DriveItem Item="@item"></DriveItem>
                         }
+                        <div class="panel-block" visible="ShowPaginator">
+                            <Paginator></Paginator>
+                        </div>
                         <div class="panel-block">
                             <button class="button is-link is-outlined is-fullwidth @(state.InProgress ? "is-loading" : "")" onclick="@LoadDriveItemsAsync">
                                 <i class="oi oi-reload"></i> Reload
@@ -32,14 +35,28 @@
 </div>
 
 @functions {
-    protected async Task LoadDriveItemsAsync() {
+    bool ShowPaginator = false;
 
-        if(!state.InProgress) {
+
+    protected async Task LoadDriveItemsAsync() {
+        if (!state.InProgress)
+        {
             List<BlazorGraphExample.Services.GraphAPI.DriveItem> items = null;
             try
             {
                 state.SetInProgress(true);
-                items = await graphService.GetDriveItemsAtPathAsync(state.Path, state.FireLoadProgressChanged, true);
+                //items = await graphService.GetDriveItemsAtPathAsync(state.Path, state.FireLoadProgressChanged, true);
+                var request = new GetDriveItemsRequest(state.Path, state.PageSize);
+                var response = await graphService.GetDriveItemsAsync(request);
+
+                if (response != null)
+                {
+                    items = response.DriveItems;
+                    ShowPaginator = !string.IsNullOrEmpty(response.SkipToken);
+
+                    int childCount = await graphService.GetChildItemsCountAsync(state.Path);
+                    state.SetPageCount(childCount, request.PageSize);
+                }
             }
             finally
             {
@@ -47,6 +64,7 @@
             }
             state.SetDriveItems(items);
         }
+
     }
 
     protected override async Task OnInitAsync()

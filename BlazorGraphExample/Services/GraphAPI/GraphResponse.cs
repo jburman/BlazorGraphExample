@@ -9,5 +9,7 @@ namespace BlazorGraphExample.Services.GraphAPI
         public T Value { get; set; }
         [DataMember(Name = "@odata.nextLink")]
         public string NextLink { get; set; }
+        [DataMember(Name = "count")]
+        public int Count { get; set; }
     }
 }

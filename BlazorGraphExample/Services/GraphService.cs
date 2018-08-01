@@ -1,8 +1,10 @@
 ﻿using BlazorGraphExample.Services.GraphAPI;
 using Microsoft.AspNetCore.Blazor;
+using Microsoft.JSInterop;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 
@@ -15,6 +17,8 @@ namespace BlazorGraphExample.Services
         const string GraphEndpoint_Drives = "https://graph.microsoft.com/v1.0/drives";
         const string GraphEndpoint_DriveRoot = "https://graph.microsoft.com/v1.0/me/drive/root";
         const string GraphEndpoint_DriveRootChildren = GraphEndpoint_DriveRoot + "/children";
+
+        const string SkipTokenParam = "$skipToken=";
         
         private readonly IAuthService _authService;
         private readonly HttpClient _http;
@@ -59,6 +63,58 @@ namespace BlazorGraphExample.Services
             return (tokenSuccess, token);
         }
 
+        private bool _TryGetRequestUrlForFolder(string path, out string requestUrl)
+        {
+            if (string.IsNullOrEmpty(path) || path == "/")
+                requestUrl = GraphEndpoint_DriveRoot;
+            else
+                requestUrl = GraphEndpoint_DriveRoot + ":" + WebUtility.UrlEncode(path);
+            return true;
+        }
+
+        private bool _TryGetRequestUrlForChildren(string path, out string requestUrl)
+        {
+            if (string.IsNullOrEmpty(path) || path == "/")
+                requestUrl = GraphEndpoint_DriveRootChildren;
+            else
+                requestUrl = GraphEndpoint_DriveRoot + ":" + WebUtility.UrlEncode(path) + ":/children";
+            return true;
+        }
+
+        private bool _TryGetRequestUrlWithPaging(GetDriveItemsRequest request, out string requestUrl)
+        {
+            if (_TryGetRequestUrlForChildren(request?.Path, out requestUrl))
+            {
+                int pageSize = Math.Max(request.PageSize, GetDriveItemsRequest.MinimumPageSize);
+                requestUrl += "?$top=" + pageSize;
+
+                if (!string.IsNullOrEmpty(request.SkipToken))
+                    requestUrl += "&$skipToken=" + WebUtility.UrlEncode(request.SkipToken);
+
+                return true;
+            }
+            else
+                requestUrl = null;
+            return false;
+        }
+
+        private string _GetSkipToken(string nextLink)
+        {
+            string skipToken = null;
+            if(!string.IsNullOrEmpty(nextLink))
+            {
+                int index = nextLink.IndexOf(SkipTokenParam, StringComparison.OrdinalIgnoreCase);
+                if(index != -1)
+                {
+                    skipToken = nextLink.Substring(index + SkipTokenParam.Length);
+                    index = skipToken.IndexOf('&');
+                    if(index != -1) // there's another parameter to trim off...
+                        skipToken = skipToken.Substring(0, index);
+                }
+            }
+            return skipToken;
+        }
+
         public async Task<GraphUser> GetMeAsync()
         {
             (bool tokenSuccess, string token) = await _TryGetTokenAsync();
@@ -71,26 +127,45 @@ namespace BlazorGraphExample.Services
                 return null;
         }
 
-        public async Task<DriveItem[]> GetDriveRootItemsAsync(string driveId = null)
+        public async Task<GetDriveItemsResponse> GetDriveItemsAsync(GetDriveItemsRequest request)
         {
-            (bool tokenSuccess, string token) = await _TryGetTokenAsync();
-            if (tokenSuccess)
+            if (_TryGetRequestUrlWithPaging(request, out string requestUrl))
             {
-                _http.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
-                GraphResponse<DriveItem[]> response;
-
-                if(!string.IsNullOrEmpty(driveId))
-                    response = await _http.GetJsonAsync<GraphResponse<DriveItem[]>>(GraphEndpoint_Drives + "/" + driveId + "/root/children");
-                else
-                    response = await _http.GetJsonAsync<GraphResponse<DriveItem[]>>(GraphEndpoint_DriveRootChildren);
-                return response.Value;
+                (bool tokenSuccess, string token) = await _TryGetTokenAsync();
+                if (tokenSuccess)
+                {
+                    _http.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+                    string responseStr = await _http.GetStringAsync(requestUrl);
+                    var response = SimpleJson.SimpleJson.DeserializeObject<GraphResponse<DriveItem[]>>(responseStr, new SimpleJson.DataContractJsonSerializerStrategy());
+                    return new GetDriveItemsResponse(response.Value, _GetSkipToken(response.NextLink));
+                }
             }
-            else
-                return null;
+            return null;
+        }
+
+        public async Task<int> GetChildItemsCountAsync(string path)
+        {
+            int count = 0;
+            if (_TryGetRequestUrlForFolder(path, out string requestUrl))
+            {
+                // trim response to just the Folder facet
+                requestUrl += "?$select=folder";
+
+                (bool tokenSuccess, string token) = await _TryGetTokenAsync();
+                if (tokenSuccess)
+                {
+                    _http.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+                    var response = await _http.GetJsonAsync<DriveItem>(requestUrl);
+                    count = response?.IsFolder == true ? response.Folder.ChildCount : 0;
+                }
+            }
+            return count;
         }
 
         public async Task<List<DriveItem>> GetDriveItemsAtPathAsync(string path = "", Action<int> progressCallback = null, bool bypassCache = false)
         {
+            Console.WriteLine("bypass cache: " + bypassCache);
+
             List<DriveItem> items = null;
 
             progressCallback?.Invoke(0);
@@ -108,16 +183,19 @@ namespace BlazorGraphExample.Services
 
                     if (string.IsNullOrEmpty(path) || path == "/")
                     {
-                        items.AddRange((await _http.GetJsonAsync<GraphResponse<DriveItem[]>>(GraphEndpoint_DriveRootChildren)).Value); // get root children
+                        response = await _http.GetJsonAsync<GraphResponse<DriveItem[]>>(GraphEndpoint_DriveRootChildren);
+                        items.AddRange(response.Value); // get root children
+                        Console.WriteLine("API Count " + response.Count);
                         progressCallback?.Invoke(items.Count);
                     }
                     else
                     {
-                        string getItemsUrl = GraphEndpoint_DriveRoot + ":" + path + ":/children?$top=100";
+                        string getItemsUrl = GraphEndpoint_DriveRoot + ":" + path + ":/children?$top=100$count=true";
                         do
                         {
                             string responseStr = await _http.GetStringAsync(getItemsUrl);
                             response = SimpleJson.SimpleJson.DeserializeObject<GraphResponse<DriveItem[]>>(responseStr, new SimpleJson.DataContractJsonSerializerStrategy());
+                            Console.WriteLine("API Count " + response.Count);
                             items.AddRange(response.Value);
                             getItemsUrl = response.NextLink;
                             progressCallback?.Invoke(items.Count);
@@ -128,32 +206,6 @@ namespace BlazorGraphExample.Services
                 }
             }
             return items;
-        }
-
-        public async Task<Drive[]> GetDrivesAsync()
-        {
-            (bool tokenSuccess, string token) = await _TryGetTokenAsync();
-            if (tokenSuccess)
-            {
-                _http.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
-                var response = await _http.GetJsonAsync<GraphResponse<Drive[]>>(GraphEndpoint_Me + "/drives");
-                return response.Value;
-            }
-            else
-                return null;
-        }
-
-        public async Task<Drive> GetDriveAsync(string driveId)
-        {
-            (bool tokenSuccess, string token) = await _TryGetTokenAsync();
-            if (tokenSuccess)
-            {
-                _http.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
-                var response = await _http.GetJsonAsync<GraphResponse<Drive>>(GraphEndpoint_Drives + "/" + driveId);
-                return response.Value;
-            }
-            else
-                return null;
         }
 
         private bool _TryGetFromCache(string path, out List<DriveItem> items)
