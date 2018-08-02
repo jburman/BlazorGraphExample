@@ -1,13 +1,24 @@
-@inject AppState state
+@inject IPagingState state
 
 <nav class="pagination" role="navigation" aria-label="pagination">
-    <a class="pagination-previous" disabled="@(state.CurrentPage == 1)">Previous</a>
-    <a class="pagination-next" onclick="@(async () => await NextPageAsync())">Next page</a>
+    <ul class="pagination-list">
+        <li>Page @state.CurrentPage of @state.PageCount</li>
+
+    </ul>
+    <a class="pagination-previous" disabled="@(state.CurrentPage == 1)" onclick="@state.PreviousPage">Previous</a>
+    <a class="pagination-next" onclick="@state.NextPage">Next page</a>
 </nav>
 
 @functions {
+
     async Task NextPageAsync() {
         await Task.FromResult(0);
         Console.WriteLine("page next");
+    }
+
+    protected override void OnInit()
+    {
+        state.PageCountChanged += StateHasChanged;
+        state.CurrentPageChanged += StateHasChanged;
     }
 }

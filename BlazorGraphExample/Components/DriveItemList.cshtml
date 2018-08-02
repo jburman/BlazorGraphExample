@@ -19,9 +19,12 @@
                         {
                             <DriveItem Item="@item"></DriveItem>
                         }
-                        <div class="panel-block" visible="ShowPaginator">
-                            <Paginator></Paginator>
-                        </div>
+                        @if (ShowPaginator)
+                        {
+                            <div class="panel-block">
+                                <Paginator></Paginator>
+                            </div>
+                        }
                         <div class="panel-block">
                             <button class="button is-link is-outlined is-fullwidth @(state.InProgress ? "is-loading" : "")" onclick="@LoadDriveItemsAsync">
                                 <i class="oi oi-reload"></i> Reload
@@ -36,6 +39,8 @@
 
 @functions {
     bool ShowPaginator = false;
+    // view model...
+    // contain
 
 
     protected async Task LoadDriveItemsAsync() {
@@ -54,26 +59,33 @@
                     items = response.DriveItems;
                     ShowPaginator = !string.IsNullOrEmpty(response.SkipToken);
 
-                    int childCount = await graphService.GetChildItemsCountAsync(state.Path);
-                    state.SetPageCount(childCount, request.PageSize);
+                    if (ShowPaginator)
+                    {
+                        int childCount = await graphService.GetChildItemsCountAsync(state.Path);
+                        state.SetPageCount(childCount, request.PageSize);
+                    }
+                    else
+                    {
+                        state.SetPageCount(1, request.PageSize);
+                    }
                 }
             }
             finally
             {
                 state.SetInProgress(false);
             }
+            if (items != null && items.Any())
+                Console.WriteLine(items[0].Name);
             state.SetDriveItems(items);
         }
-
     }
 
     protected override async Task OnInitAsync()
     {
         state.InProgressChanged += StateHasChanged;
         state.DriveItemsChanged += StateHasChanged;
-        state.PathChanged += async () => {
-            await LoadDriveItemsAsync();
-        };
+        state.PathChanged += async () => await LoadDriveItemsAsync();
+        state.CurrentPageChanged += async () => await LoadDriveItemsAsync();
 
         await LoadDriveItemsAsync();
     }

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace BlazorGraphExample.Services
 {
-    public class AppState
+    public class AppState : IPagingState
     {
         public LoginStatus LoginStatus { get; private set; } = LoginStatus.Undetermined;
         public GraphUser User { get; private set; }
@@ -67,7 +67,7 @@ namespace BlazorGraphExample.Services
 
         public void PopFolder()
         {
-            if(!string.IsNullOrEmpty(Path) && Path != "/")
+            if (!string.IsNullOrEmpty(Path) && Path != "/")
             {
                 int index = Path.LastIndexOf('/');
                 if (index == 0)
@@ -79,16 +79,37 @@ namespace BlazorGraphExample.Services
 
         public void SetPageCount(int totalItemCount, int pageSize)
         {
-            if(totalItemCount > 1 && pageSize > 0)
+            if (totalItemCount > 1 && pageSize > 0)
                 SetPageCount((int)Math.Ceiling((double)totalItemCount / pageSize));
             else
                 SetPageCount(1);
+        }
+
+        public void PreviousPage()
+        {
+            if (CurrentPage > 1)
+                SetCurrentPage(CurrentPage - 1);
         }
 
         public void NextPage()
         {
             if (CurrentPage < PageCount)
                 SetCurrentPage(CurrentPage + 1);
+        }
+
+        public void PushPageToken(int pageNumber, string skipToken)
+        {
+
+        }
+
+        public (int pageNumber, string skipToken) PopPageToken()
+        {
+            return (0, null);
+        }
+
+        public bool HasPages()
+        {
+            return false;
         }
 
         private bool _Set<T>(object existing, object updated, Action changeEvent, Action<T> setter)

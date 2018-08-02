@@ -9,7 +9,9 @@ namespace BlazorGraphExample
     {
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddSingleton(new AppState());
+            var appState = new AppState();
+            services.AddSingleton(appState);
+            services.AddSingleton<IPagingState>(appState);
 
             services.AddSingleton(new AuthConfig(
                 //clientId: "CLIENT ID HERE",
