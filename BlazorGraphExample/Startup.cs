@@ -14,8 +14,7 @@ namespace BlazorGraphExample
             services.AddSingleton<IPagingState>(appState);
 
             services.AddSingleton(new AuthConfig(
-                //clientId: "CLIENT ID HERE",
-                clientId: "948053a7-4447-48c3-a270-372015fe4664",
+                clientId: "CLIENT ID HERE",
                 scopes: new[] { "https://graph.microsoft.com/user.read https://graph.microsoft.com/files.read" }
                 ));
 
