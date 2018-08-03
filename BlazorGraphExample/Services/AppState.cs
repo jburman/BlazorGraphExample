@@ -6,10 +6,18 @@ namespace BlazorGraphExample.Services
 {
     public class AppState : IPagingState
     {
+        private Dictionary<int, string> _pageTokens;
+
+        public AppState()
+        {
+            _pageTokens = new Dictionary<int, string>();
+            PathChanged += _ResetPaging;
+        }
+
         public LoginStatus LoginStatus { get; private set; } = LoginStatus.Undetermined;
         public GraphUser User { get; private set; }
         public IReadOnlyList<DriveItem> DriveItems { get; private set; }
-        public int PageSize { get; private set; } = 5;
+        public int PageSize { get; private set; } = 15;
         public int PageCount { get; private set; } = 1;
         public int CurrentPage { get; private set; } = 1;
         public string Path { get; private set; }
@@ -20,7 +28,7 @@ namespace BlazorGraphExample.Services
         public event Action DriveItemsChanged;
         public event Action PageSizeChanged;
         public event Action PageCountChanged;
-        public event Action CurrentPageChanged;
+        public event Action<(int oldPage, int newPage)> CurrentPageChanged;
         public event Action PathChanged;
         public event Action InProgressChanged;
 
@@ -41,8 +49,15 @@ namespace BlazorGraphExample.Services
         public void SetPageCount(int newPageCount) =>
             _Set<int>(PageCount, newPageCount, PageCountChanged, val => PageCount = val);
 
-        public void SetCurrentPage(int newCurrentPage) =>
-            _Set<int>(CurrentPage, newCurrentPage, CurrentPageChanged, val => CurrentPage = val);
+        public void SetCurrentPage(int newCurrentPage)
+        {
+            if (newCurrentPage != CurrentPage)
+            {
+                int oldPage = CurrentPage;
+                CurrentPage = newCurrentPage;
+                CurrentPageChanged?.Invoke((oldPage, newCurrentPage));
+            }
+        }
 
         public void SetPath(string path) =>
             _Set<string>(Path, path, PathChanged, val => Path = val);
@@ -77,6 +92,13 @@ namespace BlazorGraphExample.Services
             }
         }
 
+        private void _ResetPaging()
+        {
+            _pageTokens.Clear();
+            SetCurrentPage(1);
+            SetPageCount(1);
+        }
+
         public void SetPageCount(int totalItemCount, int pageSize)
         {
             if (totalItemCount > 1 && pageSize > 0)
@@ -97,20 +119,13 @@ namespace BlazorGraphExample.Services
                 SetCurrentPage(CurrentPage + 1);
         }
 
-        public void PushPageToken(int pageNumber, string skipToken)
-        {
+        public void SetPageToken(int pageNumber, string skipToken) =>
+            _pageTokens[pageNumber] = skipToken;
 
-        }
+        public bool TryGetPageToken(int pageNumber, out string skipToken) =>
+            _pageTokens.TryGetValue(pageNumber, out skipToken);
 
-        public (int pageNumber, string skipToken) PopPageToken()
-        {
-            return (0, null);
-        }
-
-        public bool HasPages()
-        {
-            return false;
-        }
+        public bool HasPages() => PageCount > 1;
 
         private bool _Set<T>(object existing, object updated, Action changeEvent, Action<T> setter)
         {

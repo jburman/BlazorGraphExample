@@ -1,6 +1,5 @@
 ﻿using BlazorGraphExample.Services.GraphAPI;
 using Microsoft.AspNetCore.Blazor;
-using Microsoft.JSInterop;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,10 +25,10 @@ namespace BlazorGraphExample.Services
         // cache token for a few minutes
         private string _idToken;
         private DateTime _idTokenCreated;
-        private const int MaxTokenAgeSeconds = 60 * 5;
+        private const int MaxTokenAgeSeconds = 60 * 3;
 
         // keep a small LRU queue of drive items
-        private LinkedList<LRUCacheEntry<List<DriveItem>>> _itemsCache;
+        private LinkedList<LRUCacheEntry<GetDriveItemsResponse>> _itemsCache;
         private const int CacheLimit = 5;
         private const int MaxCacheAgeSeconds = 60 * 5; // only allow items less than 5 minutes to return from cache
 
@@ -37,7 +36,7 @@ namespace BlazorGraphExample.Services
         {
             _authService = authService;
             _http = http;
-            _itemsCache = new LinkedList<LRUCacheEntry<List<DriveItem>>>();
+            _itemsCache = new LinkedList<LRUCacheEntry<GetDriveItemsResponse>>();
             _idToken = null;
         }
 
@@ -68,7 +67,7 @@ namespace BlazorGraphExample.Services
             if (string.IsNullOrEmpty(path) || path == "/")
                 requestUrl = GraphEndpoint_DriveRoot;
             else
-                requestUrl = GraphEndpoint_DriveRoot + ":" + WebUtility.UrlEncode(path);
+                requestUrl = GraphEndpoint_DriveRoot + ":" + Uri.EscapeUriString(path);
             return true;
         }
 
@@ -77,7 +76,7 @@ namespace BlazorGraphExample.Services
             if (string.IsNullOrEmpty(path) || path == "/")
                 requestUrl = GraphEndpoint_DriveRootChildren;
             else
-                requestUrl = GraphEndpoint_DriveRoot + ":" + WebUtility.UrlEncode(path) + ":/children";
+                requestUrl = GraphEndpoint_DriveRoot + ":" + Uri.EscapeUriString(path) + ":/children";
             return true;
         }
 
@@ -129,18 +128,26 @@ namespace BlazorGraphExample.Services
 
         public async Task<GetDriveItemsResponse> GetDriveItemsAsync(GetDriveItemsRequest request)
         {
-            if (_TryGetRequestUrlWithPaging(request, out string requestUrl))
+            if (_TryGetFromCache(request.GetCacheKey(), out GetDriveItemsResponse cachedResponse))
+                return cachedResponse;
+            else
             {
-                (bool tokenSuccess, string token) = await _TryGetTokenAsync();
-                if (tokenSuccess)
+                if (_TryGetRequestUrlWithPaging(request, out string requestUrl))
                 {
-                    _http.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
-                    string responseStr = await _http.GetStringAsync(requestUrl);
-                    var response = SimpleJson.SimpleJson.DeserializeObject<GraphResponse<DriveItem[]>>(responseStr, new SimpleJson.DataContractJsonSerializerStrategy());
-                    return new GetDriveItemsResponse(response.Value, _GetSkipToken(response.NextLink));
+                    (bool tokenSuccess, string token) = await _TryGetTokenAsync();
+                    if (tokenSuccess)
+                    {
+                        _http.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+                        string responseStr = await _http.GetStringAsync(requestUrl);
+                        var graphResponse = SimpleJson.SimpleJson.DeserializeObject<GraphResponse<DriveItem[]>>(responseStr, new SimpleJson.DataContractJsonSerializerStrategy());
+
+                        var response = new GetDriveItemsResponse(graphResponse.Value, _GetSkipToken(graphResponse.NextLink));
+                        _AddToCache(request, response);
+                        return response;
+                    }
                 }
+                return null;
             }
-            return null;
         }
 
         public async Task<int> GetChildItemsCountAsync(string path)
@@ -162,55 +169,9 @@ namespace BlazorGraphExample.Services
             return count;
         }
 
-        public async Task<List<DriveItem>> GetDriveItemsAtPathAsync(string path = "", Action<int> progressCallback = null, bool bypassCache = false)
+        private bool _TryGetFromCache(string cacheKey, out GetDriveItemsResponse cachedResponse)
         {
-            Console.WriteLine("bypass cache: " + bypassCache);
-
-            List<DriveItem> items = null;
-
-            progressCallback?.Invoke(0);
-
-            if (!bypassCache && _TryGetFromCache(path, out items))
-                progressCallback?.Invoke(items.Count);
-            else
-            {
-                (bool tokenSuccess, string token) = await _TryGetTokenAsync();
-                if (tokenSuccess)
-                {
-                    items = new List<DriveItem>();
-                    _http.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
-                    GraphResponse<DriveItem[]> response;
-
-                    if (string.IsNullOrEmpty(path) || path == "/")
-                    {
-                        response = await _http.GetJsonAsync<GraphResponse<DriveItem[]>>(GraphEndpoint_DriveRootChildren);
-                        items.AddRange(response.Value); // get root children
-                        Console.WriteLine("API Count " + response.Count);
-                        progressCallback?.Invoke(items.Count);
-                    }
-                    else
-                    {
-                        string getItemsUrl = GraphEndpoint_DriveRoot + ":" + path + ":/children?$top=100$count=true";
-                        do
-                        {
-                            string responseStr = await _http.GetStringAsync(getItemsUrl);
-                            response = SimpleJson.SimpleJson.DeserializeObject<GraphResponse<DriveItem[]>>(responseStr, new SimpleJson.DataContractJsonSerializerStrategy());
-                            Console.WriteLine("API Count " + response.Count);
-                            items.AddRange(response.Value);
-                            getItemsUrl = response.NextLink;
-                            progressCallback?.Invoke(items.Count);
-                        } while (!string.IsNullOrEmpty(response.NextLink));
-                    }
-
-                    _AddToCache(path, items);
-                }
-            }
-            return items;
-        }
-
-        private bool _TryGetFromCache(string path, out List<DriveItem> items)
-        {
-            var entry = _itemsCache.FirstOrDefault(i => i.Key == path);
+            var entry = _itemsCache.FirstOrDefault(i => i.Key == cacheKey);
             bool found = false;
 
             if (entry != null)
@@ -218,34 +179,34 @@ namespace BlazorGraphExample.Services
                 if ((DateTime.Now - entry.Created).TotalSeconds > MaxCacheAgeSeconds)
                 {
                     _itemsCache.Remove(entry);
-                    items = new List<DriveItem>(0);
+                    cachedResponse = default;
                 }
                 else
                 {
                     entry.LastUsed = DateTime.Now;
-                    items = entry.Value;
+                    cachedResponse = entry.Value;
                     found = true;
                 }
             }
             else
-                items = new List<DriveItem>(0);
+                cachedResponse = default;
 
             return found;
         }
 
-        private void _AddToCache(string path, List<DriveItem> items)
+        private void _AddToCache(GetDriveItemsRequest request, GetDriveItemsResponse response)
         {
-            if (!_TryGetFromCache(path, out List<DriveItem> getItems))
+            if (!_TryGetFromCache(request.GetCacheKey(), out GetDriveItemsResponse cachedResponse))
             {
                 if (_itemsCache.Count > CacheLimit)
                 {
-                    var prune = _itemsCache.OrderBy(c => c.LastUsed).Last();
+                    var prune = _itemsCache.OrderBy(c => c.LastUsed).First();
                     _itemsCache.Remove(prune);
                 }
-                _itemsCache.AddFirst(new LRUCacheEntry<List<DriveItem>>()
+                _itemsCache.AddFirst(new LRUCacheEntry<GetDriveItemsResponse>()
                 {
-                    Key = path,
-                    Value = items,
+                    Key = request.GetCacheKey(),
+                    Value = response,
                     LastUsed = DateTime.Now,
                     Created = DateTime.Now
                 });

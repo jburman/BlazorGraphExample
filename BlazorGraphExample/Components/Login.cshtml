@@ -1,17 +1,27 @@
 @inject AppState state
 @inject IAuthService authService
 
-@if(state.LoginStatus == LoginStatus.LoggedIn) {
-    <p class="control">
-        <button class="button" onclick="@LogoutUser">Logout</button>
-    </p>
-} else {
-    <p class="control">
-        <button class="button is-info" onclick="@LoginUser">Login</button>
-    </p>
+@if (Visible)
+{
+    if (state.LoginStatus == LoginStatus.LoggedIn)
+    {
+        <p class="control">
+            <button class="button" onclick="@LogoutUser">Logout</button>
+        </p>
+    }
+    else if (state.LoginStatus == LoginStatus.LoggedOut)
+    {
+        <p class="control">
+            <button class="button is-info" onclick="@LoginUser">Login</button>
+        </p>
+    }
 }
 
 @functions {
+
+    [Parameter]
+    bool Visible { get; set; } = true;
+
     void LoginUser() {
         authService.Login();
     }

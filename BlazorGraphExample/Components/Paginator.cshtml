@@ -6,19 +6,14 @@
 
     </ul>
     <a class="pagination-previous" disabled="@(state.CurrentPage == 1)" onclick="@state.PreviousPage">Previous</a>
-    <a class="pagination-next" onclick="@state.NextPage">Next page</a>
+    <a class="pagination-next" disabled="@(state.CurrentPage == state.PageCount)" onclick="@state.NextPage">Next page</a>
 </nav>
 
 @functions {
 
-    async Task NextPageAsync() {
-        await Task.FromResult(0);
-        Console.WriteLine("page next");
-    }
-
     protected override void OnInit()
     {
         state.PageCountChanged += StateHasChanged;
-        state.CurrentPageChanged += StateHasChanged;
+        state.CurrentPageChanged += pageChanged => StateHasChanged();
     }
 }

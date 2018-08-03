@@ -5,28 +5,27 @@
 
 <section class="section">
     <div class="container">
-        <nav class="navbar">
-            <div class="navbar-end">
-                <div class="field is-grouped">
-                    <Login></Login>
-                </div>
-            </div>
-        </nav>
-        <h1 class="title">Blazor Graph API Example</h1>
         <article class="subtitle">
-            Welcome to an example of using the Microsoft Graph API from <a href="https://blazor.net" target="_blank">Blazor</a>. 
+            <strong>Blazor Graph API Example:</strong> Welcome to an example of using the Microsoft Graph API from <a href="https://blazor.net" target="_blank">Blazor</a>.
             View the <a href="https://github.com/jburman/BlazorGraphExample" target="_blank">source</a> on Github to see how it works.
         </article>
 
         @if (state.LoginStatus == LoginStatus.LoggedIn)
         {
             <hr />
-            <p class="subtitle">
-                @if (state.User != null)
-                {
-                    <text>Hello, @(string.IsNullOrEmpty(state.User.DisplayName) ? state.User.UserPrincipalName : state.User.DisplayName)</text>
-                }
-            </p>
+            <nav class="navbar">
+                <div class="navbar-start">
+                    @if (state.User != null)
+                    {
+                        <text>Hello, @(string.IsNullOrEmpty(state.User.DisplayName) ? state.User.UserPrincipalName : state.User.DisplayName)</text>
+                    }
+                </div>
+                <div class="navbar-end">
+                    <div class="field is-grouped">
+                        <Login></Login>
+                    </div>
+                </div>
+            </nav>
             <DriveItemList></DriveItemList>
         }
         else if (state.LoginStatus == LoginStatus.LoggedOut)
@@ -35,6 +34,7 @@
                 <article class="tile is-10 notification is-vertical">
                     <p class="has-text-weight-bold">You are not logged in</p>
                     <p>Please click on Login to get started.</p>
+                    <Login></Login>
                 </article>
             </div>
 
@@ -42,6 +42,7 @@
         else // still loading login status
         {
             <Loading Text="Loading your info..."></Loading>
+            <Login Visible="false"></Login>
         }
     </div>
 </section>

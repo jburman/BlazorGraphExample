@@ -1,7 +1,7 @@
 @inject AppState state
 @inject IGraphService graphService
 
-<div class="card-content">
+<div class="container">
     <div class="columns">
         <div class="column is-three-quarters-desktop">
             @if (state.InProgress && state.DriveItems == null)
@@ -19,14 +19,14 @@
                         {
                             <DriveItem Item="@item"></DriveItem>
                         }
-                        @if (ShowPaginator)
+                        @if (state.HasPages())
                         {
                             <div class="panel-block">
                                 <Paginator></Paginator>
                             </div>
                         }
                         <div class="panel-block">
-                            <button class="button is-link is-outlined is-fullwidth @(state.InProgress ? "is-loading" : "")" onclick="@LoadDriveItemsAsync">
+                            <button class="button is-link is-outlined is-fullwidth @(state.InProgress ? "is-loading" : "")" onclick="@(async () => await LoadDriveItemsAsync())">
                                 <i class="oi oi-reload"></i> Reload
                             </button>
                           </div>
@@ -38,44 +38,43 @@
 </div>
 
 @functions {
-    bool ShowPaginator = false;
-    // view model...
-    // contain
 
-
-    protected async Task LoadDriveItemsAsync() {
+    protected async Task LoadDriveItemsAsync(string skipToken = null) {
         if (!state.InProgress)
         {
             List<BlazorGraphExample.Services.GraphAPI.DriveItem> items = null;
             try
             {
                 state.SetInProgress(true);
-                //items = await graphService.GetDriveItemsAtPathAsync(state.Path, state.FireLoadProgressChanged, true);
-                var request = new GetDriveItemsRequest(state.Path, state.PageSize);
+                var request = new GetDriveItemsRequest(state.Path, state.PageSize, skipToken);
                 var response = await graphService.GetDriveItemsAsync(request);
 
                 if (response != null)
                 {
                     items = response.DriveItems;
-                    ShowPaginator = !string.IsNullOrEmpty(response.SkipToken);
 
-                    if (ShowPaginator)
+                    bool hasAnotherPage = (response.SkipToken != null);
+
+                    if(state.CurrentPage == 1)
                     {
-                        int childCount = await graphService.GetChildItemsCountAsync(state.Path);
-                        state.SetPageCount(childCount, request.PageSize);
+                        if(hasAnotherPage)
+                        {
+                            int childCount = await graphService.GetChildItemsCountAsync(state.Path);
+                            state.SetPageCount(childCount, request.PageSize);
+                        }
+                        else
+                            state.SetPageCount(1, request.PageSize);
                     }
-                    else
-                    {
-                        state.SetPageCount(1, request.PageSize);
-                    }
+
+                    if (hasAnotherPage)
+                        state.SetPageToken(state.CurrentPage, response.SkipToken);
                 }
             }
             finally
             {
                 state.SetInProgress(false);
             }
-            if (items != null && items.Any())
-                Console.WriteLine(items[0].Name);
+
             state.SetDriveItems(items);
         }
     }
@@ -85,7 +84,14 @@
         state.InProgressChanged += StateHasChanged;
         state.DriveItemsChanged += StateHasChanged;
         state.PathChanged += async () => await LoadDriveItemsAsync();
-        state.CurrentPageChanged += async () => await LoadDriveItemsAsync();
+        state.CurrentPageChanged += async pageChanged =>
+        {
+            (int oldPage, int newPage) = pageChanged;
+            string skipToken = null;
+            if(newPage > 1)
+                state.TryGetPageToken(newPage - 1, out skipToken);
+            await LoadDriveItemsAsync(skipToken);
+        };
 
         await LoadDriveItemsAsync();
     }

@@ -4,7 +4,7 @@ namespace BlazorGraphExample.Services
 {
     public class GetDriveItemsRequest
     {
-        public const int MinimumPageSize = 5;
+        public const int MinimumPageSize = 10;
 
         public GetDriveItemsRequest(string path, int pageSize = MinimumPageSize, string skipToken = null, bool allowCache = true)
         {
