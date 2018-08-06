@@ -8,7 +8,6 @@ namespace BlazorGraphExample.Services
         bool IsLoggedIn();
         void Login();
         void Logout();
-        Task<bool> TryCompleteLoginAsync();
         Task<(bool success, string idToken)> TryGetTokenAsync();
     }
 }

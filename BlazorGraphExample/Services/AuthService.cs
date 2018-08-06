@@ -26,9 +26,6 @@ namespace BlazorGraphExample.Services
         public void Logout() =>
             _JS.Invoke<string>("logout", _config);
 
-        public async Task<bool> TryCompleteLoginAsync() =>
-            await _JS.InvokeAsync<bool>("completeLoginAsync", _config);
-
         public async Task<(bool success, string idToken)> TryGetTokenAsync()
         {
             var result = await _JS.InvokeAsync<GetTokenResult>("getTokenAsync", _config);
