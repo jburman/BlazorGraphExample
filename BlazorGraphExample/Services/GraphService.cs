@@ -140,7 +140,6 @@ namespace BlazorGraphExample.Services
                         _http.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
                         string responseStr = await _http.GetStringAsync(requestUrl);
                         var graphResponse = SimpleJson.SimpleJson.DeserializeObject<GraphResponse<DriveItem[]>>(responseStr, new SimpleJson.DataContractJsonSerializerStrategy());
-
                         var response = new GetDriveItemsResponse(graphResponse.Value, _GetSkipToken(graphResponse.NextLink));
                         _AddToCache(request, response);
                         return response;
@@ -155,8 +154,7 @@ namespace BlazorGraphExample.Services
             int count = 0;
             if (_TryGetRequestUrlForFolder(path, out string requestUrl))
             {
-                // trim response to just the Folder facet
-                requestUrl += "?$select=folder";
+                requestUrl += "?expand=children(select=id)";
 
                 (bool tokenSuccess, string token) = await _TryGetTokenAsync();
                 if (tokenSuccess)
