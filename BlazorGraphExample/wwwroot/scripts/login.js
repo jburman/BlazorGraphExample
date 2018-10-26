@@ -59,8 +59,13 @@ function getTokenAsync(applicationConfig) {
 
         userAgentApplication.acquireTokenSilent(applicationConfig.scopes)
             .then(function (token) {
+                var user = userAgentApplication.getUser();
+                var expires = new Date();
+                expires = new Date(expires.getTime() + user.idToken.exp);
+
                 resolve({
-                    idToken: token
+                    idToken: token,
+                    expires: expires
                 });
             }, function (error) {
                 if (error) {

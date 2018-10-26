@@ -1,6 +1,7 @@
 ﻿using BlazorGraphExample.Services;
 using Microsoft.AspNetCore.Blazor.Builder;
 using Microsoft.Extensions.DependencyInjection;
+using W8lessLabs.GraphAPI;
 
 namespace BlazorGraphExample
 {
@@ -18,6 +19,8 @@ namespace BlazorGraphExample
                 scopes: new[] { "https://graph.microsoft.com/user.read https://graph.microsoft.com/files.read" }
                 ));
 
+            services.AddSingleton<IJsonSerializer, JsonSerializer>();   // used by HttpService
+            services.AddSingleton<IHttpService, HttpService>();         // used by GraphService
             services.AddSingleton<IAuthService, AuthService>();
             services.AddSingleton<IGraphService, GraphService>();
         }

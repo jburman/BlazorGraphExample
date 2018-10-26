@@ -1,6 +1,6 @@
-﻿using BlazorGraphExample.Services.GraphAPI;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using W8lessLabs.GraphAPI;
 
 namespace BlazorGraphExample.Services
 {

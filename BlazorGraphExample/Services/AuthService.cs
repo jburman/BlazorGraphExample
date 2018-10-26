@@ -1,5 +1,7 @@
 ﻿using Microsoft.JSInterop;
+using System;
 using System.Threading.Tasks;
+using W8lessLabs.GraphAPI;
 
 namespace BlazorGraphExample.Services
 {
@@ -26,14 +28,13 @@ namespace BlazorGraphExample.Services
         public void Logout() =>
             _JS.Invoke<string>("logout", _config);
 
-        public async Task<(bool success, string idToken)> TryGetTokenAsync()
+        public async Task<(bool success, string idToken, DateTimeOffset tokenExpires)> TryGetTokenAsync()
         {
             var result = await _JS.InvokeAsync<GetTokenResult>("getTokenAsync", _config);
-
             if (result != null)
-                return (true, result.IdToken);
+                return (true, result.IdToken, result.Expires);
             else
-                return (false, null);
+                return (false, null, default);
         }
     }
 }
