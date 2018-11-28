@@ -19,8 +19,8 @@ namespace BlazorGraphExample
                 scopes: new[] { "https://graph.microsoft.com/user.read https://graph.microsoft.com/files.read" }
                 ));
 
-            services.AddSingleton<IJsonSerializer, JsonSerializer>();   // used by HttpService
-            services.AddSingleton<IHttpService, HttpService>();         // used by GraphService
+            services.AddSingleton<IJsonSerializer, JsonSerializer>(); // Used by HttpService
+            services.AddSingleton<IHttpService, HttpService>();       // Used by GraphService
             services.AddSingleton<IAuthService, AuthService>();
             services.AddSingleton<IGraphService, GraphService>();
         }

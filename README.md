@@ -8,14 +8,14 @@ BlazorGraphExample demonstrates a self contained [Blazor](https://blazor.net) ap
 Authentication calls are handled by the [AuthService](https://github.com/jburman/BlazorGraphExample/blob/master/BlazorGraphExample/Services/AuthService.cs), 
 which provides a thin wrapper over the [MSAL.js library](https://github.com/AzureAD/microsoft-authentication-library-for-js) 
 that is designed for SPA applications. Once a token is acquired through MSAL, all of the Graph API calls are made 
-from the [GraphService](https://github.com/jburman/BlazorGraphExample/blob/master/BlazorGraphExample/Services/GraphService.cs) 
-using a few hand coded classes (just to keep things simple).
+from the [GraphService](https://github.com/jburman/W8lessLabs.GraphAPI/blob/master/src/W8lessLabs.GraphAPI/Services/GraphService.cs) 
+using a few hand coded classes. (**Note:** In the latest release of this sample, the Graph API Service code has now been moved out to a separate [NuGet package](https://www.nuget.org/packages/W8lessLabs.GraphAPI/) to make it reusable.)
 
 To try the sample out yourself:
 - Clone the repository
 - [Register a new app](https://apps.dev.microsoft.com/) with Microsoft. Be sure to select Web Platform and check Allow Implicit Flow.
 - Fill in the Redirect URI (the project uses https://localhost:44395/ by default)
-- Copy the Client ID and update Program.cs to use it.
+- Copy the Client ID and update Startup.cs to use it.
   
 You can now either run the project from Visual Studio using IISExpress or with something like dotnet-serve. 
 
