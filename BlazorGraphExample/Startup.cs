@@ -1,5 +1,5 @@
 ﻿using BlazorGraphExample.Services;
-using Microsoft.AspNetCore.Blazor.Builder;
+using Microsoft.AspNetCore.Components.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using W8lessLabs.GraphAPI;
 
@@ -25,7 +25,7 @@ namespace BlazorGraphExample
             services.AddSingleton<IGraphService, GraphService>();
         }
 
-        public void Configure(IBlazorApplicationBuilder app)
+        public void Configure(IComponentsApplicationBuilder app)
         {
             app.AddComponent<App>("app");
         }

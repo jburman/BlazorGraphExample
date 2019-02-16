@@ -35,12 +35,24 @@ function isLoggedIn(applicationConfig) {
     return true;
 }
 
-function getUserName(applicationConfig) {
+function getUserAccount(applicationConfig) {
 
     initMSAL(applicationConfig);
     var user = userAgentApplication.getUser();
     if (user) {
-        return user.displayableId;
+        var idToken = user.idToken;
+        var tenantId = idToken.tid;
+        var objectId = idToken.oid;
+        var accountId = objectId + '.' + tenantId;
+        var accountName = user.idToken.preferred_username;
+        var account = {
+            accountId: accountId,
+            accountName: accountName,
+            identityProvider: user.identityProvider,
+            azureObjectId: objectId,
+            azureTenantId: tenantId
+        };
+        return account;
     } else {
         return "";
     }
@@ -65,7 +77,8 @@ function getTokenAsync(applicationConfig) {
 
                 resolve({
                     idToken: token,
-                    expires: expires
+                    expires: expires,
+                    account: getUserAccount(applicationConfig)
                 });
             }, function (error) {
                 if (error) {

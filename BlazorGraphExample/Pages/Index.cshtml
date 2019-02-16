@@ -63,7 +63,7 @@
     {
         if (state.LoginStatus == LoginStatus.LoggedIn)
         {
-            var user = await graphService.GetMeAsync();
+            var user = await graphService.GetMeAsync(state.LoggedInAccount);
             state.SetUser(user);
         }
         else

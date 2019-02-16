@@ -1,7 +1,7 @@
 @inject AppState state
 @inject IGraphService graphService
 
-@if(Item.IsFolder) {
+@if(Item.IsFolder()) {
     <a class="panel-block" onclick="@(() => SelectFolder(Item.Name))">
         <i class="oi oi-folder has-text-primary"></i> @Item.Name
         <span class="folder-files-tag tags has-addons">

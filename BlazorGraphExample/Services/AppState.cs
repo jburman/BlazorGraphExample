@@ -15,6 +15,7 @@ namespace BlazorGraphExample.Services
         }
 
         public LoginStatus LoginStatus { get; private set; } = LoginStatus.Undetermined;
+        public GraphAccount LoggedInAccount { get; set; }
         public GraphUser User { get; private set; }
         public IReadOnlyList<DriveItem> DriveItems { get; private set; }
         public int PageSize { get; private set; } = 15;
@@ -24,6 +25,7 @@ namespace BlazorGraphExample.Services
         public bool InProgress { get; private set; }
 
         public event Action LoginStatusChanged;
+        public event Action LoggedInAccountChanged;
         public event Action UserChanged;
         public event Action DriveItemsChanged;
         public event Action PageSizeChanged;
@@ -36,6 +38,9 @@ namespace BlazorGraphExample.Services
 
         public void SetLoginStatus(LoginStatus loginStatus) =>
             _Set<LoginStatus>(LoginStatus, loginStatus, LoginStatusChanged, val => LoginStatus = val);
+
+        public void SetLoggedInAccount(GraphAccount account) =>
+            _Set<GraphAccount>(LoggedInAccount, account, LoggedInAccountChanged, val => LoggedInAccount = val);
 
         public void SetUser(GraphUser user) =>
             _Set<GraphUser>(User, user, UserChanged, val => User = val);

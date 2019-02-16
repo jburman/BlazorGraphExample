@@ -22,17 +22,20 @@
     [Parameter]
     bool Visible { get; set; } = true;
 
-    void LoginUser() {
-        authService.Login();
+    async Task LoginUser() {
+        await authService.LoginAsync();
     }
 
-    void LogoutUser() {
-        authService.Logout();
+    async Task LogoutUser() {
+        await authService.LogoutAsync(null);
     }
 
-    protected override void OnInit() {
-        var isLoggedIn = authService.IsLoggedIn();
+    protected override async Task OnInitAsync() {
+        var response = await authService.LoginAsync();
+        var isLoggedIn = !string.IsNullOrEmpty(response.AccessToken);
         var status = isLoggedIn ? LoginStatus.LoggedIn : LoginStatus.LoggedOut;
-        state.SetLoginStatus(isLoggedIn ? LoginStatus.LoggedIn : LoginStatus.LoggedOut);
+
+        state.SetLoggedInAccount(response.Account);
+        state.SetLoginStatus(status);
     }
 }
