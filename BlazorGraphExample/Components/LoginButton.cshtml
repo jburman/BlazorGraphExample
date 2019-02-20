@@ -1,0 +1,33 @@
+@inject AppState state
+@inject AuthService authService
+
+@if (state.LoginStatus == LoginStatus.LoggedIn)
+{
+    <p class="control">
+        <button class="button" onclick="@LogoutUser">Logout</button>
+    </p>
+}
+else
+{
+    <p class="control">
+        <button class="button is-info" onclick="@LoginUser">Login</button>
+    </p>
+}
+
+@functions {
+
+    async Task LoginUser() {
+        (GraphTokenResult token, GraphAccount account) = await authService.LoginAsync();
+        var isLoggedIn = token.Success;
+        var status = isLoggedIn ? LoginStatus.LoggedIn : LoginStatus.LoggedOut;
+
+        state.SetAccountId(account?.AccountId);
+        state.SetLoginStatus(status);
+    }
+
+    async Task LogoutUser() {
+        await authService.LogoutAsync();
+        state.SetLoginStatus(LoginStatus.LoggedOut);
+        state.SetAccountId(null);
+    }
+}

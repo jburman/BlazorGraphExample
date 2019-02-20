@@ -1,0 +1,43 @@
+@inject AppState state
+@inject AuthService authService
+
+@if (state.LoginStatus == LoginStatus.LoggedIn)
+{
+    @ChildContent
+}
+else if (state.LoginStatus == LoginStatus.LoggedOut)
+{
+    <div class="subtitle">
+        <article class="tile is-10 notification is-vertical">
+            <p class="has-text-weight-bold">You are not logged in</p>
+            <p>Please click on Login to get started.</p>
+            <p class="control">
+                <LoginButton></LoginButton>
+            </p>
+        </article>
+    </div>
+}
+else
+{
+    <Loading Text="Loading your info..."></Loading>
+}
+
+@functions {
+
+    [Parameter]
+    private RenderFragment ChildContent { get; set; }
+
+    protected override async Task OnInitAsync()
+    {
+        var account = await authService.GetUserAccountAsync();
+        if(authService.IsLoggedIn(account))
+        {
+            state.SetAccountId(account.AccountId);
+            state.SetLoginStatus(LoginStatus.LoggedIn);
+        }
+        else
+        {
+            state.SetLoginStatus(LoginStatus.LoggedOut);
+        }
+    }
+}

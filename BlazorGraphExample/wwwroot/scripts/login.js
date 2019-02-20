@@ -17,49 +17,50 @@ function authCallback(errorDesc, token, error, tokenType) {
 function initMSAL(applicationConfig) {
     if (userAgentApplication === null) {
         userAgentApplication = new Msal.UserAgentApplication(applicationConfig.clientId,
-            null,
+            'https://login.microsoftonline.com/common',
             authCallback,
             {
                 logger: logger,
-                cacheLocation: 'localStorage'
+                storeAuthStateInCookie: true,
+                cacheLocation: 'localStorage',
+                navigateToLoginRequestUrl: false
             });
+        window.applicationConfig = applicationConfig; // stash a ref to the config for the child iframe to access
     }
 }
 
-function isLoggedIn(applicationConfig) {
-    initMSAL(applicationConfig);
-    var user = userAgentApplication.getUser();
-    if (!user) {
-        return false;
+function createGraphAccount(user) {
+    if (user && user.idToken) {
+        var idToken = user.idToken;
+        var tenantId = idToken.tid;
+        var objectId = idToken.oid;
+        var accountId = objectId + '.' + tenantId;
+        var accountName = user.idToken.preferred_username;
+        var expires = new Date();
+        expires = new Date(expires.getTime() + idToken.exp);
+
+        var account = {
+            accountId: accountId,
+            accountName: accountName,
+            expires: expires,
+            identityProvider: user.identityProvider,
+            azureADObjectId: objectId,
+            tenantId: tenantId
+        };
+        return account;
+    } else {
+        return null;
     }
-    return true;
 }
 
 function getUserAccount(applicationConfig) {
 
     initMSAL(applicationConfig);
     var user = userAgentApplication.getUser();
-    if (user) {
-        var idToken = user.idToken;
-        var tenantId = idToken.tid;
-        var objectId = idToken.oid;
-        var accountId = objectId + '.' + tenantId;
-        var accountName = user.idToken.preferred_username;
-        var account = {
-            accountId: accountId,
-            accountName: accountName,
-            identityProvider: user.identityProvider,
-            azureObjectId: objectId,
-            azureTenantId: tenantId
-        };
-        return account;
-    } else {
-        return "";
-    }
+    return createGraphAccount(user);
 }
 
 function loginRedirect(applicationConfig) {
-
     initMSAL(applicationConfig);
     userAgentApplication.loginRedirect(applicationConfig.scopes);
     return "";
@@ -67,18 +68,20 @@ function loginRedirect(applicationConfig) {
 
 function getTokenAsync(applicationConfig) {
     initMSAL(applicationConfig);
+
     return new Promise(function (resolve, reject) {
 
         userAgentApplication.acquireTokenSilent(applicationConfig.scopes)
             .then(function (token) {
                 var user = userAgentApplication.getUser();
+                var account = createGraphAccount(user);
                 var expires = new Date();
                 expires = new Date(expires.getTime() + user.idToken.exp);
 
                 resolve({
                     idToken: token,
                     expires: expires,
-                    account: getUserAccount(applicationConfig)
+                    accountId: account.accountId
                 });
             }, function (error) {
                 if (error) {
