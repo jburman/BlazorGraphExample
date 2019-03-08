@@ -8,16 +8,16 @@ namespace BlazorGraphExample.Services
     public class AuthService : IAuthTokenProvider
     {
         private readonly AuthConfig _config;
+        private IJSInProcessRuntime _jsRuntime;
 
-        public AuthService(AuthConfig config)
+        public AuthService(AuthConfig config, IJSRuntime jsRuntime)
         {
             _config = config;
+            _jsRuntime = (IJSInProcessRuntime)jsRuntime;
         }
 
-        private IJSInProcessRuntime _JS => (IJSInProcessRuntime)JSRuntime.Current;
-
         public async Task<GraphAccount> GetUserAccountAsync() =>
-            await _JS.InvokeAsync<GraphAccount>("getUserAccount", _config);
+            await _jsRuntime.InvokeAsync<GraphAccount>("getUserAccount", _config);
 
         public bool IsLoggedIn(GraphAccount account) =>
             (account != null && account.Expires > DateTime.Now);
@@ -29,13 +29,13 @@ namespace BlazorGraphExample.Services
         }
 
         public async Task<bool> LogoutAsync() =>
-            await _JS.InvokeAsync<bool>("logout", _config);
+            await _jsRuntime.InvokeAsync<bool>("logout", _config);
 
         public async Task<GraphTokenResult> GetTokenAsync(string accountId = null, bool forceRefresh = false)
         {
             try
             {
-                var result = await _JS.InvokeAsync<TokenResult>("getTokenAsync", _config);
+                var result = await _jsRuntime.InvokeAsync<TokenResult>("getTokenAsync", _config);
                 return new GraphTokenResult(result?.IdToken != null, result.IdToken, result.Expires);
             }
             catch (Exception ex)
