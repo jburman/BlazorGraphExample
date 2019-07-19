@@ -22,13 +22,15 @@ else
     <Loading Text="Loading your info..."></Loading>
 }
 
-@functions {
+@code {
 
     [Parameter]
     private RenderFragment ChildContent { get; set; }
 
     protected override async Task OnInitAsync()
     {
+        Console.WriteLine("hello from login panel");
+
         var account = await authService.GetUserAccountAsync();
         if(authService.IsLoggedIn(account))
         {

@@ -18,7 +18,7 @@ if (window !== window.parent && !window.opener) {
     }
 } else {
     document.writeln('<app>Loading...</app>');
-    document.writeln('<script src="_framework/components.webassembly.js"></script>');
+    document.writeln('<script src="_framework/blazor.webassembly.js"></script>');
     document.writeln('<script src="https://cdnjs.cloudflare.com/ajax/libs/bluebird/3.3.4/bluebird.min.js"></script>');
     document.writeln('<script src="https://cdnjs.cloudflare.com/ajax/libs/fetch/2.0.3/fetch.min.js"></script>');
     document.writeln('<script src="scripts/msal/msal.min.js" type="text/javascript"></script>');

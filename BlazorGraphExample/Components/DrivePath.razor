@@ -21,7 +21,7 @@
                 @if(state.InProgress && _loadedCount > 0) {
                     <span class="tag is-info">Loaded @_loadedCount</span>
                 }
-                <a class="button @(state.InProgress ? "is-loading" : "")" onclick="@PopFolder">
+                <a class="button @(state.InProgress ? "is-loading" : "")" @onclick="@PopFolder">
                     <span class="icon">
                         <i class="oi oi-arrow-thick-top"></i>
                     </span>
@@ -32,7 +32,7 @@
     }
 </navbar>
 
-@functions {
+@code {
     int _loadedCount = 0;
 
     void PopFolder() {

@@ -4,17 +4,17 @@
 @if (state.LoginStatus == LoginStatus.LoggedIn)
 {
     <p class="control">
-        <button class="button" onclick="@LogoutUser">Logout</button>
+        <button class="button" @onclick="@LogoutUser">Logout</button>
     </p>
 }
 else
 {
     <p class="control">
-        <button class="button is-info" onclick="@LoginUser">Login</button>
+        <button class="button is-info" @onclick="@LoginUser">Login</button>
     </p>
 }
 
-@functions {
+@code {
 
     async Task LoginUser() {
         (GraphTokenResult token, GraphAccount account) = await authService.LoginAsync();
