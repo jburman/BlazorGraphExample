@@ -1,5 +1,6 @@
 ﻿using Microsoft.JSInterop;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using W8lessLabs.GraphAPI;
 
@@ -7,12 +8,22 @@ namespace BlazorGraphExample.Services
 {
     public class AuthService : IAuthTokenProvider
     {
-        private readonly AuthConfig _config;
+        private class MSALAuthConfig
+        {
+            public string ClientId { get; set; }
+            public string[] Scopes { get; set; }
+        }
+
+        private readonly MSALAuthConfig _config;
         private IJSInProcessRuntime _jsRuntime;
 
         public AuthService(AuthConfig config, IJSRuntime jsRuntime)
         {
-            _config = config;
+            _config = new MSALAuthConfig()
+            {
+                ClientId = config.ClientId,
+                Scopes = config.Scopes.ToArray()
+            };
             _jsRuntime = (IJSInProcessRuntime)jsRuntime;
         }
 
@@ -38,9 +49,8 @@ namespace BlazorGraphExample.Services
                 var result = await _jsRuntime.InvokeAsync<TokenResult>("getTokenAsync", _config);
                 return new GraphTokenResult(result?.IdToken != null, result.IdToken, result.Expires);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                Console.WriteLine(ex);
                 return GraphTokenResult.Failed;
             }
         }

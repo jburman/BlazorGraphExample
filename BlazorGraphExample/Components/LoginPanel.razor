@@ -29,8 +29,6 @@ else
 
     protected override async Task OnInitAsync()
     {
-        Console.WriteLine("hello from login panel");
-
         var account = await authService.GetUserAccountAsync();
         if(authService.IsLoggedIn(account))
         {

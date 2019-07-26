@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "devDependencies": {
     "bulma": "^0.7.4",
-    "msal": "^0.2.4",
+    "msal": "1.1.1",
     "open-iconic": "^1.1.1"
   }
 }
