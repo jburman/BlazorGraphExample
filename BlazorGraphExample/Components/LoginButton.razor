@@ -4,13 +4,19 @@
 @if (state.LoginStatus == LoginStatus.LoggedIn)
 {
     <p class="control">
-        <button class="button" @onclick="@LogoutUser">Logout</button>
+        <button class="button" @onclick="@LogoutUser">
+            <span class="icon"><i class="oi oi-account-logout"></i></span>
+            <span>Logout</span>
+        </button>
     </p>
 }
 else
 {
     <p class="control">
-        <button class="button is-info" @onclick="@LoginUser">Login</button>
+        <button class="button is-info" @onclick="@LoginUser">
+            <span class="icon"><i class="oi oi-account-login"></i></span>
+            <span>Login</span>
+        </button>
     </p>
 }
 

@@ -1,0 +1,90 @@
+@inject AppState state
+@inject IGraphService graphService
+
+@if (state.SelectedFolder != null)
+{
+    <article class="message is-primary">
+        <div class="message-header">
+            <p>
+                <span class="icon">
+                    <i class="oi oi-folder"></i>
+                </span>
+                Folder Info
+            </p>
+        </div>
+        <div class="message-body">
+            <table class="table is-fullwidth">
+                <tr>
+                    <th style="width: 25%;">Name</th>
+                    <td>@state.SelectedFolder.Name</td>
+                </tr>
+                <tr>
+                    <th>Created</th>
+                    <td>@state.SelectedFolder.CreatedDateTime.DateTime.ToShortDateString()</td>
+                </tr>
+                <tr>
+                    <th>Items</th>
+                    <td>@state.SelectedFolder.Folder.ChildCount.ToString("#,###,##0")</td>
+                </tr>
+            </table>
+        </div>
+    </article>
+    @if (state.SelectedFile != null && state.SelectedFile.ParentReference.Id == state.SelectedFolder.Id)
+    {
+        <article class="message">
+            <div class="message-header">
+                <p>
+                    <span class="icon">
+                        <i class="oi oi-file"></i>
+                    </span>
+                    File Info
+                </p>
+            </div>
+            <div class="message-body">
+                <table class="table is-fullwidth">
+                    <tr>
+                        <th style="width: 25%;">Name</th>
+                        <td>@state.SelectedFile.Name</td>
+                    </tr>
+                    <tr>
+                        <th>Created</th>
+                        <td>@state.SelectedFile.CreatedDateTime.DateTime.ToShortDateString()</td>
+                    </tr>
+                    <tr>
+                        <th>Items</th>
+                        <td>@Format.FormatFileSize(state.SelectedFile.Size)</td>
+                    </tr>
+                    <tr>
+                        <th colspan="2">
+                            <a href="@state.SelectedFile.WebUrl" target="_blank">
+                                <span>Open File </span>
+                                <span class="icon"><i class="oi oi-external-link"></i></span>
+                            </a>
+                        </th>
+                    </tr>
+                </table>
+            </div>
+        </article>
+    }
+}
+
+@code {
+
+    void PathChangedHandler()
+    {
+        StateHasChanged();
+    }
+
+    void FileChangedHandler()
+    {
+        StateHasChanged();
+    }
+
+    protected override void OnInit()
+    {
+        state.InProgressChanged += StateHasChanged;
+        state.DriveItemsChanged += StateHasChanged;
+        state.SelectedFolderChanged += PathChangedHandler;
+        state.SelectedFileChanged += FileChangedHandler;
+    }
+}

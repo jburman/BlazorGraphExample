@@ -3,7 +3,7 @@
 
 <div class="container">
     <div class="columns">
-        <div class="column is-three-quarters-desktop">
+        <div class="column is-two-thirds-desktop">
             @if (state.InProgress && state.DriveItems == null)
             {
                 <Loading Text="Loading OneDrive files..."></Loading>
@@ -18,7 +18,7 @@
 
                         @foreach (var item in orderedDriveItems)
                         {
-                            <DriveItem Item="@item"></DriveItem>
+                            <DriveItem @key="item" Item="@item"></DriveItem>
                         }
                         @if (state.HasPages())
                         {
@@ -35,6 +35,9 @@
                 }
             }
         </div>
+        <div class="column is-one-third-desktop">
+            <InfoPanel></InfoPanel>
+        </div>
     </div>
 </div>
 
@@ -47,6 +50,8 @@
 
     protected async Task LoadDriveItemsAsync(string skipToken = null, bool allowCache = true)
     {
+        Console.WriteLine("LoadDriveItems: " + state.Path);
+
         if (!state.InProgress)
         {
             List<W8lessLabs.GraphAPI.DriveItem> items = null;
@@ -90,7 +95,8 @@
     {
         state.InProgressChanged += StateHasChanged;
         state.DriveItemsChanged += StateHasChanged;
-        state.PathChanged += async () => await LoadDriveItemsAsync();
+        state.SelectedFolderChanged += async () => await LoadDriveItemsAsync();
+        state.SelectedFileChanged += StateHasChanged;
         state.CurrentPageChanged += async pageChanged =>
         {
             (int oldPage, int newPage) = pageChanged;
@@ -100,6 +106,9 @@
             await LoadDriveItemsAsync(skipToken);
         };
 
-        await LoadDriveItemsAsync();
+        // load root folder
+        var rootFolder = await graphService.GetDriveItemAsync(state.AccountId, "/");
+
+        state.PushFolder(rootFolder);
     }
 }

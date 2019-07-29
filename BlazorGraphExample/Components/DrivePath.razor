@@ -11,7 +11,7 @@
             </div>
         } else {
             <div class="navbar-item">
-                <span>@state.Path</span>
+                <span>@GetDisplayPath()</span>
             </div>
         }
     </div>
@@ -35,8 +35,25 @@
 @code {
     int _loadedCount = 0;
 
+    private Stack<int> pathSlashes = new Stack<int>();
+
     void PopFolder() {
         state.PopFolder();
+    }
+
+    string GetDisplayPath()
+    {
+        pathSlashes.Clear();
+        string path = state.Path;
+        for (int i = 0; i < path.Length; i++)
+            if (path[i] == '/') pathSlashes.Push(i);
+        if(pathSlashes.Count > 2)
+        {
+            pathSlashes.Pop();
+            int index = pathSlashes.Peek();
+            return ".." + path.Substring(index);
+        }
+        return path;
     }
 
     protected override void OnInit()
@@ -46,7 +63,7 @@
             _loadedCount = count;
             StateHasChanged();
         };
-        state.DriveItemsChanged += () => { 
+        state.DriveItemsChanged += () => {
             _loadedCount = 0;
             StateHasChanged();
         };

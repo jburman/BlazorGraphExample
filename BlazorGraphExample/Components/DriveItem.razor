@@ -2,7 +2,7 @@
 @inject IGraphService graphService
 
 @if(Item.IsFolder()) {
-    <a class="panel-block" @onclick="@(() => SelectFolder(Item.Name))">
+    <a class="panel-block" @onclick="@(() => SelectItem(Item))">
         <i class="oi oi-folder has-text-primary"></i> @Item.Name
         <span class="folder-files-tag tags has-addons">
             <span class="tag">files</span>
@@ -10,11 +10,22 @@
         </span>
     </a>
 } else {
-    <a class="panel-block" href="@Item.WebUrl" target="_blank">
-        <i class="oi oi-file has-text-info"></i> @Item.Name
-        <span class="file-size-tag tag is-info">
-            @FormatSize(Item.Size)
+    <a class="panel-block @(state.SelectedFile?.Id == Item.Id ? "is-active" : "")" @onclick="@(() => SelectItem(Item))">
+        <span class="panel-icon">
+            <i class="oi oi-file has-text-info"></i>
         </span>
+        @Item.Name
+        <div class="tags-right">
+            @if (Item.Shared != null)
+            {
+                <span class="tag share-tag is-success">
+                    shared
+                </span>
+            }
+            <span class="file-size-tag tag is-info">
+                @Format.FormatFileSize(Item.Size)
+            </span>
+        </div>
     </a>
 }
 
@@ -22,17 +33,19 @@
     [Parameter]
     W8lessLabs.GraphAPI.DriveItem Item { get; set; }
 
-    string FormatSize(long size) {
-        var byteSize = ByteSizeLib.ByteSize.FromBytes(size);
-        if(size > 1_000_000) 
-            return byteSize.ToString("MB");
-        else 
-            return byteSize.ToString("KB");
-    }
-
-    void SelectFolder(string folder) {
-        if(!state.InProgress) {
-            state.PushFolder(folder);
+    void SelectItem(W8lessLabs.GraphAPI.DriveItem item)
+    {
+        if (!state.InProgress)
+        {
+            if (item.IsFolder())
+            {
+                // is a folder
+                state.PushFolder(item);
+            }
+            else
+            {
+                state.SelectFile(item);
+            }
         }
     }
 }

@@ -9,7 +9,19 @@
     <link href="css/site.css" rel="stylesheet" />
 </head>
 <body>
-    <app>Loading...</app>
+    <app>
+        <div id="pageloader" class="pageloader is-active">
+            
+            <span class="title">
+                <span class="icon">
+                    <i class="oi oi-fire"></i>
+                </span>
+                <span>
+                    Hang tight!
+                </span>
+            </span>
+        </div>
+    </app>
     <script src="_framework/blazor.webassembly.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bluebird/3.3.4/bluebird.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fetch/2.0.3/fetch.min.js"></script>

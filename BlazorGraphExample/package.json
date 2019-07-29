@@ -2,7 +2,9 @@
   "name": "myproject",
   "version": "1.0.0",
   "devDependencies": {
-    "bulma": "^0.7.4",
+    "bulma": "^0.7.5",
+    "bulma-pageloader": "2.1.0",
+    "bulma-tooltip": "2.0.2",
     "msal": "1.1.1",
     "open-iconic": "^1.1.1"
   }
