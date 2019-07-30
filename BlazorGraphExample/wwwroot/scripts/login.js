@@ -15,6 +15,7 @@ function initMSAL(applicationConfig) {
         userAgentApplication.handleRedirectCallback((error, response) => {
         });
     }
+    window.applicationConfig = applicationConfig; // store for applogin.js to access on callback
 }
 
 function createGraphAccount(user) {

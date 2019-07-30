@@ -50,8 +50,6 @@
 
     protected async Task LoadDriveItemsAsync(string skipToken = null, bool allowCache = true)
     {
-        Console.WriteLine("LoadDriveItems: " + state.Path);
-
         if (!state.InProgress)
         {
             List<W8lessLabs.GraphAPI.DriveItem> items = null;
