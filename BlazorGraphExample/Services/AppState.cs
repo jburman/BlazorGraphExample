@@ -125,8 +125,7 @@ namespace BlazorGraphExample.Services
 
         public void SelectFile(DriveItem item)
         {
-            if(item?.IsFile() == true)
-                _Set<DriveItem>(SelectedFile, item, SelectedFileChanged, val => SelectedFile = val);
+            _Set<DriveItem>(SelectedFile, item, SelectedFileChanged, val => SelectedFile = val);
         }
 
         private void _ResetPaging()
