@@ -11,7 +11,7 @@
 
 @code {
 
-    protected override void OnInit()
+    protected override void OnInitialized()
     {
         state.PageCountChanged += StateHasChanged;
         state.CurrentPageChanged += pageChanged => StateHasChanged();

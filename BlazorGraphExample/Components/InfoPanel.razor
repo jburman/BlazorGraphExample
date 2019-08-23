@@ -62,6 +62,33 @@
                             </a>
                         </th>
                     </tr>
+                    @*@if (state.SelectedFile.Shared != null)
+                    {
+                        if (filePermissions == null)
+                        {
+                            <tr>
+                                <th colspan="2">
+                                    <button type="button" class="button is-info" @onclick="@LoadFilePermissions">Share Settings &raquo;</button>
+                                </th>
+                            </tr>
+                        }
+                        else
+                        {
+                            foreach(Permission perm in filePermissions)
+                            {
+                                <tr>
+                                    <td>
+                                        @(GetSharedWithName(perm))
+                                    </td>
+                                    <td>
+                                        @(string.Join(",", perm.Roles))
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    }*@
+
+
                 </table>
             </div>
         </article>
@@ -70,17 +97,47 @@
 
 @code {
 
-    void PathChangedHandler()
-    {
-        StateHasChanged();
-    }
+        IEnumerable<Permission> filePermissions = null;
 
-    void FileChangedHandler()
-    {
-        StateHasChanged();
-    }
+        void PathChangedHandler()
+        {
+            StateHasChanged();
+        }
 
-    protected override void OnInit()
+        void FileChangedHandler()
+        {
+            StateHasChanged();
+        }
+
+        async Task LoadFilePermissions()
+        {
+            filePermissions = null;
+            if(state.SelectedFile.Shared != null)
+                filePermissions = await graphService.GetPermissionsByIdAsync(state.AccountId, state.SelectedFile.Id);
+
+            StateHasChanged();
+        }
+
+        string GetSharedWithName(Permission perm)
+        {
+            var grantedTo = perm.GrantedTo;
+            if (grantedTo != null)
+            {
+                if (grantedTo.User != null)
+                    return grantedTo.User.DisplayName;
+                else if (grantedTo.Application != null)
+                    return grantedTo.Application.DisplayName;
+                else if (grantedTo.Device != null)
+                    return grantedTo.Device.DisplayName;
+            }
+
+            if (perm.Link != null)
+                return "Link";
+            else
+                return "N/A";
+        }
+
+    protected override void OnInitialized()
     {
         state.InProgressChanged += StateHasChanged;
         state.DriveItemsChanged += StateHasChanged;

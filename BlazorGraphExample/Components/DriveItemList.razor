@@ -89,7 +89,7 @@
         }
     }
 
-    protected override async Task OnInitAsync()
+    protected override async Task OnInitializedAsync()
     {
         state.InProgressChanged += StateHasChanged;
         state.DriveItemsChanged += StateHasChanged;

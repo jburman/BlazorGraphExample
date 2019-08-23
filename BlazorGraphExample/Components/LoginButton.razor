@@ -22,7 +22,8 @@ else
 
 @code {
 
-    async Task LoginUser() {
+    async Task LoginUser()
+    {
         (GraphTokenResult token, GraphAccount account) = await authService.LoginAsync();
         var isLoggedIn = token.Success;
         var status = isLoggedIn ? LoginStatus.LoggedIn : LoginStatus.LoggedOut;
@@ -31,7 +32,8 @@ else
         state.SetLoginStatus(status);
     }
 
-    async Task LogoutUser() {
+    async Task LogoutUser()
+    {
         await authService.LogoutAsync();
         state.SetLoginStatus(LoginStatus.LoggedOut);
         state.SetAccountId(null);

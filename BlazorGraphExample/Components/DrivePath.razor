@@ -56,7 +56,7 @@
         return path;
     }
 
-    protected override void OnInit()
+    protected override void OnInitialized()
     {
         state.InProgressChanged += StateHasChanged;
         state.LoadProgressChanged += (count) => {

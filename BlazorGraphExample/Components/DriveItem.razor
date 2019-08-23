@@ -18,11 +18,11 @@
         <div class="tags-right">
             @if (Item.Shared != null)
             {
-                <span class="tag share-tag is-success">
+                <span class="tag share-tag is-info">
                     shared
                 </span>
             }
-            <span class="file-size-tag tag is-info">
+            <span class="file-size-tag tag is-light">
                 @Format.FormatFileSize(Item.Size)
             </span>
         </div>
@@ -31,7 +31,7 @@
 
 @code {
     [Parameter]
-    W8lessLabs.GraphAPI.DriveItem Item { get; set; }
+    public W8lessLabs.GraphAPI.DriveItem Item { get; set; }
 
     void SelectItem(W8lessLabs.GraphAPI.DriveItem item)
     {

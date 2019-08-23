@@ -25,9 +25,9 @@ else
 @code {
 
     [Parameter]
-    private RenderFragment ChildContent { get; set; }
+    public RenderFragment ChildContent { get; set; }
 
-    protected override async Task OnInitAsync()
+    protected override async Task OnInitializedAsync()
     {
         var account = await authService.GetUserAccountAsync();
         if(authService.IsLoggedIn(account))
